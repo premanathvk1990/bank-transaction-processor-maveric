@@ -286,4 +286,17 @@ class AccountServiceTest {
                         "ACC2001",
                         new BigDecimal("200")));
     }
+
+    @Test
+    void shouldRejectTransferToSameAccount() {
+
+        accountService.createAccount("ACC1001",
+                new BigDecimal("1000"));
+
+        assertThrows(InvalidTransferException.class,
+                () -> accountService.transfer(
+                        "ACC1001",
+                        "ACC1001",
+                        new BigDecimal("100")));
+    }
 }
