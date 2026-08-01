@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -348,5 +349,26 @@ class AccountServiceTest {
         assertThrows(
                 AccountNotFoundException.class,
                 () -> accountService.getBalance("ACC9999"));
+    }
+
+    @Test
+    void shouldReturnTransactionHistory() {
+
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        accountService.deposit(
+                "ACC1001",
+                new BigDecimal("200"));
+
+        accountService.withdraw(
+                "ACC1001",
+                new BigDecimal("100"));
+
+        List<Transaction> history =
+                accountService.getTransactionHistory("ACC1001");
+
+        assertEquals(2, history.size());
     }
 }

@@ -5,6 +5,7 @@ import com.bank.transaction.processor.maveric.model.Transaction;
 import com.bank.transaction.processor.maveric.model.TransactionType;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -137,5 +138,12 @@ public class AccountService {
         Account account = getExistingAccount(accountId);
 
         return account.getBalance();
+    }
+
+    public List<Transaction> getTransactionHistory(String accountId) {
+
+        Account account = getExistingAccount(accountId);
+
+        return account.getTransactions();
     }
 }
