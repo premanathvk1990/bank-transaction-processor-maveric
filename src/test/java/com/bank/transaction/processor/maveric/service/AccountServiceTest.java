@@ -228,4 +228,17 @@ class AccountServiceTest {
                 new BigDecimal("800")
                         .compareTo(accountService.getAccount("ACC2001").getBalance()));
     }
+
+    @Test
+    void shouldThrowExceptionWhenSourceAccountNotFound() {
+
+        accountService.createAccount("ACC2001",
+                new BigDecimal("500"));
+
+        assertThrows(AccountNotFoundException.class,
+                () -> accountService.transfer(
+                        "ACC9999",
+                        "ACC2001",
+                        new BigDecimal("100")));
+    }
 }
