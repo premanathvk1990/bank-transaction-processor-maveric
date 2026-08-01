@@ -1,4 +1,4 @@
-package com.bank_transaction_processor.maveric;
+package com.bank.transaction.processor.maveric;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

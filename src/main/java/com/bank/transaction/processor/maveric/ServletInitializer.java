@@ -1,4 +1,4 @@
-package com.bank_transaction_processor.maveric;
+package com.bank.transaction.processor.maveric;
 
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
