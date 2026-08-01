@@ -180,4 +180,29 @@ class AccountServiceTest {
                         "ACC1001",
                         new BigDecimal("200")));
     }
+
+    @Test
+    void shouldRecordWithdrawalTransaction() {
+
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        Account account = accountService.withdraw(
+                "ACC1001",
+                new BigDecimal("250"));
+
+        assertEquals(1, account.getTransactions().size());
+
+        Transaction transaction = account.getTransactions().get(0);
+
+        assertEquals(
+                TransactionType.WITHDRAW,
+                transaction.getTransactionType());
+
+        assertEquals(
+                0,
+                new BigDecimal("250")
+                        .compareTo(transaction.getAmount()));
+    }
 }
