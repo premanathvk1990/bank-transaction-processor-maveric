@@ -89,4 +89,10 @@ public class AccountService {
 
         account.getTransactions().add(transaction);
     }
+
+    public void transfer(String fromAccountId,
+                         String toAccountId,
+                         BigDecimal amount) {
+
+    }
 }
