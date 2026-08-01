@@ -118,6 +118,21 @@ public class AccountService {
         source.setBalance(source.getBalance().subtract(amount));
 
         destination.setBalance(destination.getBalance().add(amount));
+        recordTransaction(
+                source,
+                TransactionType.TRANSFER,
+                amount,
+                fromAccountId,
+                toAccountId,
+                "Transfer Sent");
+
+        recordTransaction(
+                destination,
+                TransactionType.TRANSFER,
+                amount,
+                fromAccountId,
+                toAccountId,
+                "Transfer Received");
     }
 
     public Account getAccount(String accountId) {
