@@ -17,8 +17,8 @@ public class AccountService {
             throw new AccountAlreadyExistsException(
                     "Account already exists");
         }
-        if (initialBalance.compareTo(BigDecimal.ZERO) < 0) {
-            throw new InvalidAmountException("Initial balance cannot be negative");
+        if (initialBalance.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException("Deposit amount must be greater than zero");
         }
 
         Account account = Account.builder()

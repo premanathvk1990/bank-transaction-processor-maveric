@@ -81,4 +81,17 @@ class AccountServiceTest {
                         "ACC9999",
                         new BigDecimal("100")));
     }
+
+    @Test
+    void shouldRejectNegativeDepositAmount() {
+
+        accountService.createAccount("ACC1001",
+                new BigDecimal("1000"));
+
+        assertThrows(
+                InvalidAmountException.class,
+                () -> accountService.deposit(
+                        "ACC1001",
+                        new BigDecimal("-100")));
+    }
 }
