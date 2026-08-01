@@ -111,6 +111,11 @@ public class AccountService {
             throw new InvalidAmountException(
                     "Transfer amount must be greater than zero");
         }
+
+        if (source.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException(fromAccountId);
+        }
+
         source.setBalance(source.getBalance().subtract(amount));
 
         destination.setBalance(destination.getBalance().add(amount));
