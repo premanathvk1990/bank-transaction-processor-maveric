@@ -241,4 +241,17 @@ class AccountServiceTest {
                         "ACC2001",
                         new BigDecimal("100")));
     }
+
+    @Test
+    void shouldThrowExceptionWhenDestinationAccountNotFound() {
+
+        accountService.createAccount("ACC1001",
+                new BigDecimal("1000"));
+
+        assertThrows(AccountNotFoundException.class,
+                () -> accountService.transfer(
+                        "ACC1001",
+                        "ACC9999",
+                        new BigDecimal("100")));
+    }
 }
