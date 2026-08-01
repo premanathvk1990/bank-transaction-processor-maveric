@@ -77,7 +77,15 @@ public class AccountService {
             throw new InsufficientFundsException(accountId);
         }
         account.setBalance(account.getBalance().subtract(amount));
+        Transaction transaction = Transaction.builder()
+                .transactionType(TransactionType.WITHDRAW)
+                .amount(amount)
+                .fromAccountId(accountId)
+                .balanceAfterTransaction(account.getBalance())
+                .description("Cash Withdrawal")
+                .build();
 
+        account.getTransactions().add(transaction);
         return account;
     }
 }
