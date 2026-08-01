@@ -151,4 +151,18 @@ class AccountServiceTest {
                         "ACC9999",
                         new BigDecimal("100")));
     }
+
+    @Test
+    void shouldRejectNegativeWithdrawalAmount() {
+
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        assertThrows(
+                InvalidAmountException.class,
+                () -> accountService.withdraw(
+                        "ACC1001",
+                        new BigDecimal("-100")));
+    }
 }
