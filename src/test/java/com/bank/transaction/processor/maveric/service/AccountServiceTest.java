@@ -371,4 +371,46 @@ class AccountServiceTest {
 
         assertEquals(2, history.size());
     }
+
+    @Test
+    void shouldReturnTransactionsInChronologicalOrder() {
+
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        accountService.deposit(
+                "ACC1001",
+                new BigDecimal("200"));
+
+        accountService.withdraw(
+                "ACC1001",
+                new BigDecimal("50"));
+
+        List<Transaction> history =
+                accountService.getTransactionHistory("ACC1001");
+
+        assertEquals(
+                TransactionType.DEPOSIT,
+                history.get(0).getTransactionType());
+
+        assertEquals(
+                TransactionType.WITHDRAW,
+                history.get(1).getTransactionType());
+    }
+
+    @Test
+    void shouldReturnImmutableTransactionHistory() {
+
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        List<Transaction> history =
+                accountService.getTransactionHistory("ACC1001");
+
+        assertThrows(
+                UnsupportedOperationException.class,
+                () -> history.add(Transaction.builder().build()));
+    }
 }

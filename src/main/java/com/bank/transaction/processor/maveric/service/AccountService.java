@@ -144,6 +144,6 @@ public class AccountService {
 
         Account account = getExistingAccount(accountId);
 
-        return account.getTransactions();
+        return List.copyOf(account.getTransactions());
     }
 }
