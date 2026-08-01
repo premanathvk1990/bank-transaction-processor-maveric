@@ -319,4 +319,26 @@ class AccountServiceTest {
                 accountService.getAccount("ACC2001")
                         .getTransactions().size());
     }
+
+    @Test
+    void shouldReturnAccountBalance() {
+
+        // Arrange
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        accountService.deposit(
+                "ACC1001",
+                new BigDecimal("500"));
+
+        // Act
+        BigDecimal balance = accountService.getBalance("ACC1001");
+
+        // Assert
+        assertEquals(
+                0,
+                new BigDecimal("1500")
+                        .compareTo(balance));
+    }
 }

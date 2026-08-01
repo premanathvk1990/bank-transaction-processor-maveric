@@ -131,4 +131,11 @@ public class AccountService {
     public Account getAccount(String accountId) {
         return accounts.get(accountId);
     }
+
+    public BigDecimal getBalance(String accountId) {
+
+        Account account = getExistingAccount(accountId);
+
+        return account.getBalance();
+    }
 }
