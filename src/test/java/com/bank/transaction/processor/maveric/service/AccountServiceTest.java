@@ -270,4 +270,20 @@ class AccountServiceTest {
                         "ACC2001",
                         new BigDecimal("-100")));
     }
+
+    @Test
+    void shouldRejectTransferWhenInsufficientFunds() {
+
+        accountService.createAccount("ACC1001",
+                new BigDecimal("100"));
+
+        accountService.createAccount("ACC2001",
+                new BigDecimal("500"));
+
+        assertThrows(InsufficientFundsException.class,
+                () -> accountService.transfer(
+                        "ACC1001",
+                        "ACC2001",
+                        new BigDecimal("200")));
+    }
 }
