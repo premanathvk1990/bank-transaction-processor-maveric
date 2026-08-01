@@ -121,4 +121,24 @@ class AccountServiceTest {
                 new BigDecimal("200")
                         .compareTo(transaction.getAmount()));
     }
+
+    @Test
+    void shouldWithdrawAmountSuccessfully() {
+
+        // Arrange
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000.00"));
+
+        // Act
+        Account account = accountService.withdraw(
+                "ACC1001",
+                new BigDecimal("300.00"));
+
+        // Assert
+        assertEquals(
+                0,
+                new BigDecimal("700.00")
+                        .compareTo(account.getBalance()));
+    }
 }
