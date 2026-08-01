@@ -93,6 +93,11 @@ public class AccountService {
     public void transfer(String fromAccountId,
                          String toAccountId,
                          BigDecimal amount) {
+        Account source = accounts.get(fromAccountId);
+        Account destination = accounts.get(toAccountId);
 
+        source.setBalance(source.getBalance().subtract(amount));
+
+        destination.setBalance(destination.getBalance().add(amount));
     }
 }
