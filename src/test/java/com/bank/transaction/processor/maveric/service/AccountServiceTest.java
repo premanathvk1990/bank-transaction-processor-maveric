@@ -53,4 +53,21 @@ class AccountServiceTest {
                         "ACC1001",
                         new BigDecimal("-100")));
     }
+
+    @Test
+    void shouldDepositAmountSuccessfully() {
+
+        // Arrange
+        accountService.createAccount("ACC1001", new BigDecimal("1000.00"));
+
+        // Act
+        Account account = accountService.deposit(
+                "ACC1001",
+                new BigDecimal("500.00"));
+
+        // Assert
+        assertEquals(
+                0,
+                new BigDecimal("1500.00").compareTo(account.getBalance()));
+    }
 }
