@@ -43,4 +43,13 @@ class AccountServiceTest {
                 () -> accountService.createAccount("ACC1001",
                         new BigDecimal("500")));
     }
+
+    @Test
+    void shouldRejectNegativeInitialBalance() {
+
+        assertThrows(InvalidAmountException.class,
+                () -> accountService.createAccount(
+                        "ACC1001",
+                        new BigDecimal("-100")));
+    }
 }
