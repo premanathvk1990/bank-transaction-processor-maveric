@@ -30,4 +30,9 @@ public  class InMemoryAccountRepository implements AccountRepository {
 
         return accounts.containsKey(accountId);
     }
+
+    @Override
+    public void clear() {
+        accounts.clear();
+    }
 }

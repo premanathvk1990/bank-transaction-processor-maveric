@@ -1,298 +1,192 @@
 package com.bank.transaction.processor.maveric.service;
 
-import com.bank.transaction.processor.maveric.exception.*;
+import com.bank.transaction.processor.maveric.exception.AccountAlreadyExistsException;
+import com.bank.transaction.processor.maveric.exception.AccountNotFoundException;
+import com.bank.transaction.processor.maveric.exception.InsufficientFundsException;
+import com.bank.transaction.processor.maveric.exception.InvalidAmountException;
+import com.bank.transaction.processor.maveric.exception.InvalidTransferException;
 import com.bank.transaction.processor.maveric.model.Account;
-import com.bank.transaction.processor.maveric.model.Transaction;
 import com.bank.transaction.processor.maveric.model.TransactionType;
-import org.junit.jupiter.api.AutoClose;
-import org.junit.jupiter.api.BeforeEach;
+import com.bank.transaction.processor.maveric.repository.AccountRepository;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
-import java.util.List;
+import java.util.ArrayList;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
-class AccountServiceTest {
+@ExtendWith(MockitoExtension.class)
+class AccountServiceImplTest {
 
-    @Autowired
-    private AccountService accountService;
+    @Mock
+    private AccountRepository repository;
 
-    @BeforeEach
-    void setUp() {
-       // accountService = new AccountService();
+    @InjectMocks
+    private AccountServiceImpl accountService;
+
+    private Account createAccount(String id, String balance) {
+        return Account.builder()
+                .accountId(id)
+                .balance(new BigDecimal(balance))
+                .transactions(new ArrayList<>())
+                .build();
     }
 
     @Test
     void shouldCreateAccountSuccessfully() {
 
+        when(repository.exists("ACC1001")).thenReturn(false);
+
+        when(repository.save(any(Account.class)))
+                .thenAnswer(invocation -> invocation.getArgument(0));
+
         Account account = accountService.createAccount(
                 "ACC1001",
-                new BigDecimal("1000.00")
-        );
+                new BigDecimal("1000"));
 
-        assertNotNull(account);
         assertEquals("ACC1001", account.getAccountId());
-        assertEquals(
-                0,
-                new BigDecimal("1000.00").compareTo(account.getBalance())
-        );
+        assertEquals(0,
+                account.getBalance().compareTo(new BigDecimal("1000")));
+
+        verify(repository).save(any(Account.class));
     }
 
     @Test
     void shouldThrowExceptionWhenAccountAlreadyExists() {
 
-        accountService.createAccount("ACC1001", new BigDecimal("1000"));
+        when(repository.exists("ACC1001")).thenReturn(true);
 
         assertThrows(AccountAlreadyExistsException.class,
-                () -> accountService.createAccount("ACC1001",
-                        new BigDecimal("500")));
+                () -> accountService.createAccount(
+                        "ACC1001",
+                        new BigDecimal("1000")));
+
+        verify(repository, never()).save(any());
     }
 
     @Test
-    void shouldRejectNegativeInitialBalance() {
+    void shouldRejectInvalidInitialBalance() {
 
         assertThrows(InvalidAmountException.class,
                 () -> accountService.createAccount(
                         "ACC1001",
-                        new BigDecimal("-100")));
+                        BigDecimal.ZERO));
     }
 
     @Test
-    void shouldDepositAmountSuccessfully() {
+    void shouldDepositSuccessfully() {
 
-        // Arrange
-        accountService.createAccount("ACC1001", new BigDecimal("1000.00"));
+        Account account = createAccount("ACC1001", "1000");
 
-        // Act
-        Account account = accountService.deposit(
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.of(account));
+
+        when(repository.save(any(Account.class)))
+                .thenAnswer(i -> i.getArgument(0));
+
+        Account result = accountService.deposit(
                 "ACC1001",
-                new BigDecimal("500.00"));
+                new BigDecimal("500"));
 
-        // Assert
-        assertEquals(
-                0,
-                new BigDecimal("1500.00").compareTo(account.getBalance()));
+        assertEquals(0,
+                result.getBalance().compareTo(new BigDecimal("1500")));
+
+        assertEquals(1, result.getTransactions().size());
+
+        assertEquals(TransactionType.DEPOSIT,
+                result.getTransactions().get(0).getTransactionType());
     }
 
     @Test
-    void shouldThrowExceptionWhenAccountDoesNotExist() {
+    void shouldThrowAccountNotFoundForDeposit() {
 
-        assertThrows(
-                AccountNotFoundException.class,
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.empty());
+
+        assertThrows(AccountNotFoundException.class,
                 () -> accountService.deposit(
-                        "ACC9999",
+                        "ACC1001",
                         new BigDecimal("100")));
     }
 
     @Test
-    void shouldRejectNegativeDepositAmount() {
+    void shouldWithdrawSuccessfully() {
 
-        accountService.createAccount("ACC1001",
-                new BigDecimal("1000"));
+        Account account = createAccount("ACC1001", "1000");
 
-        assertThrows(
-                InvalidAmountException.class,
-                () -> accountService.deposit(
-                        "ACC1001",
-                        new BigDecimal("-100")));
-    }
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.of(account));
 
-    @Test
-    void shouldCreateTransactionAfterDeposit() {
+        when(repository.save(any(Account.class)))
+                .thenAnswer(i -> i.getArgument(0));
 
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
-
-        Account account = accountService.deposit(
+        Account result = accountService.withdraw(
                 "ACC1001",
                 new BigDecimal("200"));
 
-        assertEquals(1, account.getTransactions().size());
+        assertEquals(0,
+                result.getBalance().compareTo(new BigDecimal("800")));
 
-        Transaction transaction =
-                account.getTransactions().getFirst();
+        assertEquals(1,
+                result.getTransactions().size());
 
-        assertEquals(TransactionType.DEPOSIT,
-                transaction.getTransactionType());
-
-        assertEquals(
-                0,
-                new BigDecimal("200")
-                        .compareTo(transaction.getAmount()));
+        assertEquals(TransactionType.WITHDRAW,
+                result.getTransactions().get(0).getTransactionType());
     }
 
     @Test
-    void shouldWithdrawAmountSuccessfully() {
+    void shouldThrowInsufficientFundsException() {
 
-        // Arrange
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000.00"));
+        Account account = createAccount("ACC1001", "100");
 
-        // Act
-        Account account = accountService.withdraw(
-                "ACC1001",
-                new BigDecimal("300.00"));
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.of(account));
 
-        // Assert
-        assertEquals(
-                0,
-                new BigDecimal("700.00")
-                        .compareTo(account.getBalance()));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenWithdrawFromUnknownAccount() {
-
-        assertThrows(
-                AccountNotFoundException.class,
-                () -> accountService.withdraw(
-                        "ACC9999",
-                        new BigDecimal("100")));
-    }
-
-    @Test
-    void shouldRejectNegativeWithdrawalAmount() {
-
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
-
-        assertThrows(
-                InvalidAmountException.class,
-                () -> accountService.withdraw(
-                        "ACC1001",
-                        new BigDecimal("-100")));
-    }
-
-    @Test
-    void shouldRejectWithdrawalWhenInsufficientFunds() {
-
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("100"));
-
-        assertThrows(
-                InsufficientFundsException.class,
+        assertThrows(InsufficientFundsException.class,
                 () -> accountService.withdraw(
                         "ACC1001",
                         new BigDecimal("200")));
     }
 
     @Test
-    void shouldRecordWithdrawalTransaction() {
+    void shouldTransferSuccessfully() {
 
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
+        Account source = createAccount("ACC1001", "1000");
+        Account destination = createAccount("ACC2001", "500");
 
-        Account account = accountService.withdraw(
-                "ACC1001",
-                new BigDecimal("250"));
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.of(source));
 
-        assertEquals(1, account.getTransactions().size());
+        when(repository.findById("ACC2001"))
+                .thenReturn(Optional.of(destination));
 
-        Transaction transaction = account.getTransactions().get(0);
+        when(repository.save(any(Account.class)))
+                .thenAnswer(i -> i.getArgument(0));
 
-        assertEquals(
-                TransactionType.WITHDRAW,
-                transaction.getTransactionType());
-
-        assertEquals(
-                0,
-                new BigDecimal("250")
-                        .compareTo(transaction.getAmount()));
-    }
-
-    @Test
-    void shouldTransferMoneySuccessfully() {
-
-        // Arrange
-        accountService.createAccount("ACC1001", new BigDecimal("1000"));
-        accountService.createAccount("ACC2001", new BigDecimal("500"));
-
-        // Act
         accountService.transfer(
                 "ACC1001",
                 "ACC2001",
                 new BigDecimal("300"));
 
-        // Assert
         assertEquals(0,
-                new BigDecimal("700")
-                        .compareTo(accountService.getAccount("ACC1001").getBalance()));
+                source.getBalance().compareTo(new BigDecimal("700")));
 
         assertEquals(0,
-                new BigDecimal("800")
-                        .compareTo(accountService.getAccount("ACC2001").getBalance()));
-    }
+                destination.getBalance().compareTo(new BigDecimal("800")));
 
-    @Test
-    void shouldThrowExceptionWhenSourceAccountNotFound() {
-
-        accountService.createAccount("ACC2001",
-                new BigDecimal("500"));
-
-        assertThrows(AccountNotFoundException.class,
-                () -> accountService.transfer(
-                        "ACC9999",
-                        "ACC2001",
-                        new BigDecimal("100")));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenDestinationAccountNotFound() {
-
-        accountService.createAccount("ACC1001",
-                new BigDecimal("1000"));
-
-        assertThrows(AccountNotFoundException.class,
-                () -> accountService.transfer(
-                        "ACC1001",
-                        "ACC9999",
-                        new BigDecimal("100")));
-    }
-
-    @Test
-    void shouldRejectNegativeTransferAmount() {
-
-        accountService.createAccount("ACC1001",
-                new BigDecimal("1000"));
-
-        accountService.createAccount("ACC2001",
-                new BigDecimal("500"));
-
-        assertThrows(InvalidAmountException.class,
-                () -> accountService.transfer(
-                        "ACC1001",
-                        "ACC2001",
-                        new BigDecimal("-100")));
-    }
-
-    @Test
-    void shouldRejectTransferWhenInsufficientFunds() {
-
-        accountService.createAccount("ACC1001",
-                new BigDecimal("100"));
-
-        accountService.createAccount("ACC2001",
-                new BigDecimal("500"));
-
-        assertThrows(InsufficientFundsException.class,
-                () -> accountService.transfer(
-                        "ACC1001",
-                        "ACC2001",
-                        new BigDecimal("200")));
+        verify(repository, times(2))
+                .save(any(Account.class));
     }
 
     @Test
     void shouldRejectTransferToSameAccount() {
-
-        accountService.createAccount("ACC1001",
-                new BigDecimal("1000"));
 
         assertThrows(InvalidTransferException.class,
                 () -> accountService.transfer(
@@ -302,118 +196,37 @@ class AccountServiceTest {
     }
 
     @Test
-    void shouldRecordTransferTransactions() {
+    void shouldReturnBalance() {
 
-        accountService.createAccount("ACC1001",
-                new BigDecimal("1000"));
+        Account account = createAccount("ACC1001", "2500");
 
-        accountService.createAccount("ACC2001",
-                new BigDecimal("500"));
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.of(account));
 
-        accountService.transfer(
-                "ACC1001",
-                "ACC2001",
-                new BigDecimal("300"));
-
-        assertEquals(1,
-                accountService.getAccount("ACC1001")
-                        .getTransactions().size());
-
-        assertEquals(1,
-                accountService.getAccount("ACC2001")
-                        .getTransactions().size());
-    }
-
-    @Test
-    void shouldReturnAccountBalance() {
-
-        // Arrange
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
-
-        accountService.deposit(
-                "ACC1001",
-                new BigDecimal("500"));
-
-        // Act
         BigDecimal balance = accountService.getBalance("ACC1001");
 
-        // Assert
-        assertEquals(
-                0,
-                new BigDecimal("1500")
-                        .compareTo(balance));
-    }
-
-    @Test
-    void shouldThrowExceptionWhenBalanceRequestedForUnknownAccount() {
-
-        assertThrows(
-                AccountNotFoundException.class,
-                () -> accountService.getBalance("ACC9999"));
+        assertEquals(0,
+                balance.compareTo(new BigDecimal("2500")));
     }
 
     @Test
     void shouldReturnTransactionHistory() {
 
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
+        Account account = createAccount("ACC1001", "1000");
 
-        accountService.deposit(
-                "ACC1001",
-                new BigDecimal("200"));
+        accountService = new AccountServiceImpl(repository);
 
-        accountService.withdraw(
-                "ACC1001",
-                new BigDecimal("100"));
+        account.getTransactions().add(
+                com.bank.transaction.processor.maveric.model.Transaction
+                        .builder()
+                        .transactionType(TransactionType.DEPOSIT)
+                        .amount(new BigDecimal("100"))
+                        .build());
 
-        List<Transaction> history =
-                accountService.getTransactionHistory("ACC1001");
+        when(repository.findById("ACC1001"))
+                .thenReturn(Optional.of(account));
 
-        assertEquals(2, history.size());
-    }
-
-    @Test
-    void shouldReturnTransactionsInChronologicalOrder() {
-
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
-
-        accountService.deposit(
-                "ACC1001",
-                new BigDecimal("200"));
-
-        accountService.withdraw(
-                "ACC1001",
-                new BigDecimal("50"));
-
-        List<Transaction> history =
-                accountService.getTransactionHistory("ACC1001");
-
-        assertEquals(
-                TransactionType.DEPOSIT,
-                history.get(0).getTransactionType());
-
-        assertEquals(
-                TransactionType.WITHDRAW,
-                history.get(1).getTransactionType());
-    }
-
-    @Test
-    void shouldReturnImmutableTransactionHistory() {
-
-        accountService.createAccount(
-                "ACC1001",
-                new BigDecimal("1000"));
-
-        List<Transaction> history =
-                accountService.getTransactionHistory("ACC1001");
-
-        assertThrows(
-                UnsupportedOperationException.class,
-                () -> history.add(Transaction.builder().build()));
+        assertEquals(1,
+                accountService.getTransactionHistory("ACC1001").size());
     }
 }

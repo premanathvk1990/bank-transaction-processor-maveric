@@ -11,4 +11,6 @@ public interface AccountRepository {
     Optional<Account> findById(String accountId);
 
     boolean exists(String accountId);
+
+    void clear();
 }
