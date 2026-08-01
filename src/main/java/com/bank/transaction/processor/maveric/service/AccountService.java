@@ -37,11 +37,7 @@ public class AccountService {
             throw new InvalidAmountException(
                     "Deposit amount must be greater than zero");
         }
-        Account account = accounts.get(accountId);
-
-        if (account == null) {
-            throw new AccountNotFoundException(accountId);
-        }
+        Account account = getExistingAccount(accountId);
 
         account.setBalance(account.getBalance().add(amount));
         recordTransaction(account, TransactionType.DEPOSIT, amount, accountId, null, "Cash Deposit");
@@ -50,11 +46,8 @@ public class AccountService {
 
     public Account withdraw(String accountId, BigDecimal amount) {
 
-        Account account = accounts.get(accountId);
+        Account account = getExistingAccount(accountId);
 
-        if (account == null) {
-            throw new AccountNotFoundException(accountId);
-        }
         if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
 
             throw new InvalidAmountException("Withdrawal amount must be greater than zero");
@@ -90,17 +83,9 @@ public class AccountService {
     public void transfer(String fromAccountId,
                          String toAccountId,
                          BigDecimal amount) {
-        Account source = accounts.get(fromAccountId);
+        Account source = getExistingAccount(fromAccountId);
 
-        if (source == null) {
-            throw new AccountNotFoundException(fromAccountId);
-        }
-
-        Account destination = accounts.get(toAccountId);
-
-        if (destination == null) {
-            throw new AccountNotFoundException(toAccountId);
-        }
+        Account destination = getExistingAccount(toAccountId);
 
         if (amount == null ||
                 amount.compareTo(BigDecimal.ZERO) <= 0) {
@@ -133,6 +118,14 @@ public class AccountService {
                 fromAccountId,
                 toAccountId,
                 "Transfer Received");
+    }
+
+    private Account getExistingAccount(String accountId) {
+        Account account = accounts.get(accountId);
+        if (account == null) {
+            throw new AccountNotFoundException(accountId);
+        }
+        return account;
     }
 
     public Account getAccount(String accountId) {
