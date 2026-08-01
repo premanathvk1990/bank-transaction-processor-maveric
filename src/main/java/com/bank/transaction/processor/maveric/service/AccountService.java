@@ -63,6 +63,10 @@ public class AccountService {
 
         Account account = accounts.get(accountId);
 
+        if (account == null) {
+            throw new AccountNotFoundException(accountId);
+        }
+
         account.setBalance(account.getBalance().subtract(amount));
 
         return account;
