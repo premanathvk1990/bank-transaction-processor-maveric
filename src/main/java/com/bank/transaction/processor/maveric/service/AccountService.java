@@ -1,4 +1,5 @@
 package com.bank.transaction.processor.maveric.service;
+
 import com.bank.transaction.processor.maveric.exception.*;
 import com.bank.transaction.processor.maveric.model.Account;
 import com.bank.transaction.processor.maveric.model.Transaction;
@@ -134,16 +135,13 @@ public class AccountService {
     }
 
     public BigDecimal getBalance(String accountId) {
-
-        Account account = getExistingAccount(accountId);
-
-        return account.getBalance();
+        return getExistingAccount(accountId).getBalance();
     }
 
     public List<Transaction> getTransactionHistory(String accountId) {
 
-        Account account = getExistingAccount(accountId);
-
-        return List.copyOf(account.getTransactions());
+        return List.copyOf(
+                getExistingAccount(accountId)
+                        .getTransactions());
     }
 }
