@@ -31,6 +31,11 @@ public class AccountService {
     }
 
     public Account deposit(String accountId, BigDecimal amount) {
-        return null;
+
+        Account account = accounts.get(accountId);
+
+        account.setBalance(account.getBalance().add(amount));
+
+        return account;
     }
 }
