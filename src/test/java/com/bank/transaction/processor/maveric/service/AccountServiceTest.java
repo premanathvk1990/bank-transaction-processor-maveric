@@ -4,8 +4,10 @@ import com.bank.transaction.processor.maveric.exception.*;
 import com.bank.transaction.processor.maveric.model.Account;
 import com.bank.transaction.processor.maveric.model.Transaction;
 import com.bank.transaction.processor.maveric.model.TransactionType;
+import org.junit.jupiter.api.AutoClose;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import java.math.BigDecimal;
 import java.util.List;
@@ -14,11 +16,12 @@ import static org.junit.jupiter.api.Assertions.*;
 
 class AccountServiceTest {
 
+    @Autowired
     private AccountService accountService;
 
     @BeforeEach
     void setUp() {
-        accountService = new AccountService();
+       // accountService = new AccountService();
     }
 
     @Test
