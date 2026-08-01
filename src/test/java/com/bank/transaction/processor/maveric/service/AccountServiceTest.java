@@ -254,4 +254,20 @@ class AccountServiceTest {
                         "ACC9999",
                         new BigDecimal("100")));
     }
+
+    @Test
+    void shouldRejectNegativeTransferAmount() {
+
+        accountService.createAccount("ACC1001",
+                new BigDecimal("1000"));
+
+        accountService.createAccount("ACC2001",
+                new BigDecimal("500"));
+
+        assertThrows(InvalidAmountException.class,
+                () -> accountService.transfer(
+                        "ACC1001",
+                        "ACC2001",
+                        new BigDecimal("-100")));
+    }
 }
