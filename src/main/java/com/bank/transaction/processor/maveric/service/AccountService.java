@@ -105,6 +105,12 @@ public class AccountService {
             throw new AccountNotFoundException(toAccountId);
         }
 
+        if (amount == null ||
+                amount.compareTo(BigDecimal.ZERO) <= 0) {
+
+            throw new InvalidAmountException(
+                    "Transfer amount must be greater than zero");
+        }
         source.setBalance(source.getBalance().subtract(amount));
 
         destination.setBalance(destination.getBalance().add(amount));
