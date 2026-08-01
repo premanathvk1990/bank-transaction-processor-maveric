@@ -94,10 +94,19 @@ public class AccountService {
                          String toAccountId,
                          BigDecimal amount) {
         Account source = accounts.get(fromAccountId);
+
+        if (source == null) {
+            throw new AccountNotFoundException(fromAccountId);
+        }
+
         Account destination = accounts.get(toAccountId);
 
         source.setBalance(source.getBalance().subtract(amount));
 
         destination.setBalance(destination.getBalance().add(amount));
+    }
+
+    public Account getAccount(String accountId) {
+        return accounts.get(accountId);
     }
 }
