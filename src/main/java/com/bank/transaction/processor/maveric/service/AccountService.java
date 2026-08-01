@@ -59,7 +59,12 @@ public class AccountService {
         return account;
     }
 
-    public Account withdraw(String acc1001, BigDecimal bigDecimal) {
-        return null;
+    public Account withdraw(String accountId, BigDecimal amount) {
+
+        Account account = accounts.get(accountId);
+
+        account.setBalance(account.getBalance().subtract(amount));
+
+        return account;
     }
 }
