@@ -66,7 +66,12 @@ public class AccountService {
         if (account == null) {
             throw new AccountNotFoundException(accountId);
         }
+        if (amount == null ||
+                amount.compareTo(BigDecimal.ZERO) <= 0) {
 
+            throw new InvalidAmountException(
+                    "Withdrawal amount must be greater than zero");
+        }
         account.setBalance(account.getBalance().subtract(amount));
 
         return account;
