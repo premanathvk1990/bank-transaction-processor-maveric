@@ -4,6 +4,8 @@ import com.bank.transaction.processor.maveric.exception.AccountAlreadyExistsExce
 import com.bank.transaction.processor.maveric.exception.AccountNotFoundException;
 import com.bank.transaction.processor.maveric.exception.InvalidAmountException;
 import com.bank.transaction.processor.maveric.model.Account;
+import com.bank.transaction.processor.maveric.model.Transaction;
+import com.bank.transaction.processor.maveric.model.TransactionType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -93,5 +95,30 @@ class AccountServiceTest {
                 () -> accountService.deposit(
                         "ACC1001",
                         new BigDecimal("-100")));
+    }
+
+    @Test
+    void shouldCreateTransactionAfterDeposit() {
+
+        accountService.createAccount(
+                "ACC1001",
+                new BigDecimal("1000"));
+
+        Account account = accountService.deposit(
+                "ACC1001",
+                new BigDecimal("200"));
+
+        assertEquals(1, account.getTransactions().size());
+
+        Transaction transaction =
+                account.getTransactions().getFirst();
+
+        assertEquals(TransactionType.DEPOSIT,
+                transaction.getTransactionType());
+
+        assertEquals(
+                0,
+                new BigDecimal("200")
+                        .compareTo(transaction.getAmount()));
     }
 }

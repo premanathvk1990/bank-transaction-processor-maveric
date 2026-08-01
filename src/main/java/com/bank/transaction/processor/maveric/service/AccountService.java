@@ -3,6 +3,8 @@ import com.bank.transaction.processor.maveric.exception.AccountAlreadyExistsExce
 import com.bank.transaction.processor.maveric.exception.AccountNotFoundException;
 import com.bank.transaction.processor.maveric.exception.InvalidAmountException;
 import com.bank.transaction.processor.maveric.model.Account;
+import com.bank.transaction.processor.maveric.model.Transaction;
+import com.bank.transaction.processor.maveric.model.TransactionType;
 
 import java.math.BigDecimal;
 import java.util.Map;
@@ -33,6 +35,10 @@ public class AccountService {
 
     public Account deposit(String accountId, BigDecimal amount) {
 
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new InvalidAmountException(
+                    "Deposit amount must be greater than zero");
+        }
         Account account = accounts.get(accountId);
 
         if (account == null) {
@@ -40,6 +46,15 @@ public class AccountService {
         }
 
         account.setBalance(account.getBalance().add(amount));
+        Transaction transaction = Transaction.builder()
+                .transactionType(TransactionType.DEPOSIT)
+                .amount(amount)
+                .fromAccountId(accountId)
+                .balanceAfterTransaction(account.getBalance())
+                .description("Cash Deposit")
+                .build();
+
+        account.getTransactions().add(transaction);
 
         return account;
     }
