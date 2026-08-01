@@ -1,6 +1,7 @@
 package com.bank.transaction.processor.maveric.service;
 import com.bank.transaction.processor.maveric.exception.AccountAlreadyExistsException;
 import com.bank.transaction.processor.maveric.exception.AccountNotFoundException;
+import com.bank.transaction.processor.maveric.exception.InsufficientFundsException;
 import com.bank.transaction.processor.maveric.exception.InvalidAmountException;
 import com.bank.transaction.processor.maveric.model.Account;
 import com.bank.transaction.processor.maveric.model.Transaction;
@@ -71,6 +72,9 @@ public class AccountService {
 
             throw new InvalidAmountException(
                     "Withdrawal amount must be greater than zero");
+        }
+        if (account.getBalance().compareTo(amount) < 0) {
+            throw new InsufficientFundsException(accountId);
         }
         account.setBalance(account.getBalance().subtract(amount));
 
