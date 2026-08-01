@@ -341,4 +341,12 @@ class AccountServiceTest {
                 new BigDecimal("1500")
                         .compareTo(balance));
     }
+
+    @Test
+    void shouldThrowExceptionWhenBalanceRequestedForUnknownAccount() {
+
+        assertThrows(
+                AccountNotFoundException.class,
+                () -> accountService.getBalance("ACC9999"));
+    }
 }
