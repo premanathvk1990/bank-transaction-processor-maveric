@@ -1,5 +1,6 @@
 package com.bank.transaction.processor.maveric.service;
 import com.bank.transaction.processor.maveric.exception.AccountAlreadyExistsException;
+import com.bank.transaction.processor.maveric.exception.AccountNotFoundException;
 import com.bank.transaction.processor.maveric.exception.InvalidAmountException;
 import com.bank.transaction.processor.maveric.model.Account;
 
@@ -33,6 +34,10 @@ public class AccountService {
     public Account deposit(String accountId, BigDecimal amount) {
 
         Account account = accounts.get(accountId);
+
+        if (account == null) {
+            throw new AccountNotFoundException(accountId);
+        }
 
         account.setBalance(account.getBalance().add(amount));
 
