@@ -29,4 +29,8 @@ public class AccountService {
 
         return account;
     }
+
+    public Account deposit(String accountId, BigDecimal amount) {
+        return null;
+    }
 }
