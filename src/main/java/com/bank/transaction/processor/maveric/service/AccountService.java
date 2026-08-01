@@ -58,4 +58,8 @@ public class AccountService {
 
         return account;
     }
+
+    public Account withdraw(String acc1001, BigDecimal bigDecimal) {
+        return null;
+    }
 }
