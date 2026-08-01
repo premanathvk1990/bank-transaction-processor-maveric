@@ -101,6 +101,10 @@ public class AccountService {
 
         Account destination = accounts.get(toAccountId);
 
+        if (destination == null) {
+            throw new AccountNotFoundException(toAccountId);
+        }
+
         source.setBalance(source.getBalance().subtract(amount));
 
         destination.setBalance(destination.getBalance().add(amount));
