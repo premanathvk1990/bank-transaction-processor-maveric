@@ -296,4 +296,27 @@ class AccountServiceTest {
                         "ACC1001",
                         new BigDecimal("100")));
     }
+
+    @Test
+    void shouldRecordTransferTransactions() {
+
+        accountService.createAccount("ACC1001",
+                new BigDecimal("1000"));
+
+        accountService.createAccount("ACC2001",
+                new BigDecimal("500"));
+
+        accountService.transfer(
+                "ACC1001",
+                "ACC2001",
+                new BigDecimal("300"));
+
+        assertEquals(1,
+                accountService.getAccount("ACC1001")
+                        .getTransactions().size());
+
+        assertEquals(1,
+                accountService.getAccount("ACC2001")
+                        .getTransactions().size());
+    }
 }
