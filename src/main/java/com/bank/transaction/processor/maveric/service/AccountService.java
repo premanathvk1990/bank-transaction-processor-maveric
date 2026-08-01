@@ -47,16 +47,7 @@ public class AccountService {
         }
 
         account.setBalance(account.getBalance().add(amount));
-        Transaction transaction = Transaction.builder()
-                .transactionType(TransactionType.DEPOSIT)
-                .amount(amount)
-                .fromAccountId(accountId)
-                .balanceAfterTransaction(account.getBalance())
-                .description("Cash Deposit")
-                .build();
-
-        account.getTransactions().add(transaction);
-
+        recordTransaction(account, TransactionType.DEPOSIT, amount, accountId, null, "Cash Deposit");
         return account;
     }
 
@@ -67,25 +58,35 @@ public class AccountService {
         if (account == null) {
             throw new AccountNotFoundException(accountId);
         }
-        if (amount == null ||
-                amount.compareTo(BigDecimal.ZERO) <= 0) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
 
-            throw new InvalidAmountException(
-                    "Withdrawal amount must be greater than zero");
+            throw new InvalidAmountException("Withdrawal amount must be greater than zero");
         }
         if (account.getBalance().compareTo(amount) < 0) {
             throw new InsufficientFundsException(accountId);
         }
         account.setBalance(account.getBalance().subtract(amount));
+        recordTransaction(account, TransactionType.WITHDRAW, amount, accountId, null, "Cash Withdrawal");
+        return account;
+    }
+
+    private void recordTransaction(
+            Account account,
+            TransactionType type,
+            BigDecimal amount,
+            String fromAccountId,
+            String toAccountId,
+            String description) {
+
         Transaction transaction = Transaction.builder()
-                .transactionType(TransactionType.WITHDRAW)
+                .transactionType(type)
                 .amount(amount)
-                .fromAccountId(accountId)
+                .fromAccountId(fromAccountId)
+                .toAccountId(toAccountId)
                 .balanceAfterTransaction(account.getBalance())
-                .description("Cash Withdrawal")
+                .description(description)
                 .build();
 
         account.getTransactions().add(transaction);
-        return account;
     }
 }
