@@ -205,4 +205,27 @@ class AccountServiceTest {
                 new BigDecimal("250")
                         .compareTo(transaction.getAmount()));
     }
+
+    @Test
+    void shouldTransferMoneySuccessfully() {
+
+        // Arrange
+        accountService.createAccount("ACC1001", new BigDecimal("1000"));
+        accountService.createAccount("ACC2001", new BigDecimal("500"));
+
+        // Act
+        accountService.transfer(
+                "ACC1001",
+                "ACC2001",
+                new BigDecimal("300"));
+
+        // Assert
+        assertEquals(0,
+                new BigDecimal("700")
+                        .compareTo(accountService.getAccount("ACC1001").getBalance()));
+
+        assertEquals(0,
+                new BigDecimal("800")
+                        .compareTo(accountService.getAccount("ACC2001").getBalance()));
+    }
 }
