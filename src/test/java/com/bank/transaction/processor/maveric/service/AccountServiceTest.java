@@ -32,4 +32,14 @@ class AccountServiceTest {
                 new BigDecimal("1000.00").compareTo(account.getBalance())
         );
     }
+
+    @Test
+    void shouldThrowExceptionWhenAccountAlreadyExists() {
+
+        accountService.createAccount("ACC1001", new BigDecimal("1000"));
+
+        assertThrows(AccountAlreadyExistsException.class,
+                () -> accountService.createAccount("ACC1001",
+                        new BigDecimal("500")));
+    }
 }
