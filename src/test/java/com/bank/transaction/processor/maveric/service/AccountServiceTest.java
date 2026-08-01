@@ -141,4 +141,14 @@ class AccountServiceTest {
                 new BigDecimal("700.00")
                         .compareTo(account.getBalance()));
     }
+
+    @Test
+    void shouldThrowExceptionWhenWithdrawFromUnknownAccount() {
+
+        assertThrows(
+                AccountNotFoundException.class,
+                () -> accountService.withdraw(
+                        "ACC9999",
+                        new BigDecimal("100")));
+    }
 }
